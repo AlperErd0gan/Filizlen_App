@@ -58,6 +58,7 @@ class NewsCreate(BaseModel):
     content: str
     category_id: int
     image_url: Optional[str] = None
+    published_at: Optional[str] = None  # Format: "YYYY-MM-DD HH:MM:SS" or ISO format
 
 class NewsUpdate(BaseModel):
     title: Optional[str] = None
@@ -65,6 +66,7 @@ class NewsUpdate(BaseModel):
     content: Optional[str] = None
     category_id: Optional[int] = None
     image_url: Optional[str] = None
+    published_at: Optional[str] = None  # Format: "YYYY-MM-DD HH:MM:SS" or ISO format
 
 # Tips Models
 class TipCreate(BaseModel):
@@ -276,7 +278,8 @@ async def create_news(news: NewsCreate):
             summary=news.summary,
             content=news.content,
             category_id=news.category_id,
-            image_url=news.image_url
+            image_url=news.image_url,
+            published_at=news.published_at
         )
         return {"status": "success", "message": "News created", "id": news_id}
     except Exception as e:
@@ -292,7 +295,8 @@ async def update_news(news_id: int, news: NewsUpdate):
             summary=news.summary,
             content=news.content,
             category_id=news.category_id,
-            image_url=news.image_url
+            image_url=news.image_url,
+            published_at=news.published_at
         )
         if not success:
             raise HTTPException(status_code=404, detail="News not found")

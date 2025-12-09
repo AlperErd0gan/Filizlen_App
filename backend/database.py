@@ -68,19 +68,26 @@ def get_news_by_id(news_id: int) -> Optional[Dict]:
         return dict(row) if row else None
 
 def add_news(title: str, summary: str, content: str, category_id: int, 
-             image_url: Optional[str] = None) -> int:
+             image_url: Optional[str] = None, published_at: Optional[str] = None) -> int:
     """Yeni haber ekle"""
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO news (title, summary, content, category_id, image_url)
-            VALUES (?, ?, ?, ?, ?)
-        """, (title, summary, content, category_id, image_url))
+        if published_at:
+            cursor.execute("""
+                INSERT INTO news (title, summary, content, category_id, image_url, published_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (title, summary, content, category_id, image_url, published_at))
+        else:
+            cursor.execute("""
+                INSERT INTO news (title, summary, content, category_id, image_url)
+                VALUES (?, ?, ?, ?, ?)
+            """, (title, summary, content, category_id, image_url))
         return cursor.lastrowid
 
 def update_news(news_id: int, title: Optional[str] = None, 
                 summary: Optional[str] = None, content: Optional[str] = None,
-                category_id: Optional[int] = None, image_url: Optional[str] = None) -> bool:
+                category_id: Optional[int] = None, image_url: Optional[str] = None,
+                published_at: Optional[str] = None) -> bool:
     """Haber güncelle"""
     updates = []
     params = []
@@ -100,6 +107,9 @@ def update_news(news_id: int, title: Optional[str] = None,
     if image_url is not None:
         updates.append("image_url = ?")
         params.append(image_url)
+    if published_at is not None:
+        updates.append("published_at = ?")
+        params.append(published_at)
     
     if not updates:
         return False
