@@ -10,6 +10,7 @@ from typing import Optional, List
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+import database
 
 # Load environment variables
 load_dotenv()
@@ -49,6 +50,37 @@ class ChatResponse(BaseModel):
 class HealthResponse(BaseModel):
     status: str
     message: str
+
+# News Models
+class NewsCreate(BaseModel):
+    title: str
+    summary: str
+    content: str
+    category_id: int
+    image_url: Optional[str] = None
+
+class NewsUpdate(BaseModel):
+    title: Optional[str] = None
+    summary: Optional[str] = None
+    content: Optional[str] = None
+    category_id: Optional[int] = None
+    image_url: Optional[str] = None
+
+# Tips Models
+class TipCreate(BaseModel):
+    title: str
+    content: str
+    difficulty: Optional[str] = None
+
+class TipUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    difficulty: Optional[str] = None
+
+# Category Models
+class CategoryCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
 
 # Initialize Gemini model
 def get_gemini_model():
@@ -215,6 +247,167 @@ async def generate_text(prompt: str):
             status_code=500,
             detail=f"Error generating text: {str(e)}"
         )
+
+# ========== NEWS ENDPOINTS ==========
+
+@app.get("/api/news")
+async def get_news(limit: Optional[int] = None, category_id: Optional[int] = None):
+    """Tüm haberleri getir"""
+    try:
+        news = database.get_all_news(limit=limit, category_id=category_id)
+        return {"status": "success", "data": news, "count": len(news)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching news: {str(e)}")
+
+@app.get("/api/news/{news_id}")
+async def get_news_by_id(news_id: int):
+    """ID'ye göre haber getir"""
+    news = database.get_news_by_id(news_id)
+    if not news:
+        raise HTTPException(status_code=404, detail="News not found")
+    return {"status": "success", "data": news}
+
+@app.post("/api/news")
+async def create_news(news: NewsCreate):
+    """Yeni haber ekle"""
+    try:
+        news_id = database.add_news(
+            title=news.title,
+            summary=news.summary,
+            content=news.content,
+            category_id=news.category_id,
+            image_url=news.image_url
+        )
+        return {"status": "success", "message": "News created", "id": news_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating news: {str(e)}")
+
+@app.put("/api/news/{news_id}")
+async def update_news(news_id: int, news: NewsUpdate):
+    """Haber güncelle"""
+    try:
+        success = database.update_news(
+            news_id=news_id,
+            title=news.title,
+            summary=news.summary,
+            content=news.content,
+            category_id=news.category_id,
+            image_url=news.image_url
+        )
+        if not success:
+            raise HTTPException(status_code=404, detail="News not found")
+        return {"status": "success", "message": "News updated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating news: {str(e)}")
+
+@app.delete("/api/news/{news_id}")
+async def delete_news(news_id: int):
+    """Haber sil"""
+    try:
+        success = database.delete_news(news_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="News not found")
+        return {"status": "success", "message": "News deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting news: {str(e)}")
+
+# ========== TIPS ENDPOINTS ==========
+
+@app.get("/api/tips")
+async def get_tips(limit: Optional[int] = None, difficulty: Optional[str] = None):
+    """Tüm tips'leri getir"""
+    try:
+        tips = database.get_all_tips(limit=limit, difficulty=difficulty)
+        return {"status": "success", "data": tips, "count": len(tips)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching tips: {str(e)}")
+
+@app.get("/api/tips/{tip_id}")
+async def get_tip_by_id(tip_id: int):
+    """ID'ye göre tip getir"""
+    tip = database.get_tip_by_id(tip_id)
+    if not tip:
+        raise HTTPException(status_code=404, detail="Tip not found")
+    return {"status": "success", "data": tip}
+
+@app.post("/api/tips")
+async def create_tip(tip: TipCreate):
+    """Yeni tip ekle"""
+    try:
+        tip_id = database.add_tip(
+            title=tip.title,
+            content=tip.content,
+            difficulty=tip.difficulty
+        )
+        return {"status": "success", "message": "Tip created", "id": tip_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating tip: {str(e)}")
+
+@app.put("/api/tips/{tip_id}")
+async def update_tip(tip_id: int, tip: TipUpdate):
+    """Tip güncelle"""
+    try:
+        success = database.update_tip(
+            tip_id=tip_id,
+            title=tip.title,
+            content=tip.content,
+            difficulty=tip.difficulty
+        )
+        if not success:
+            raise HTTPException(status_code=404, detail="Tip not found")
+        return {"status": "success", "message": "Tip updated"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating tip: {str(e)}")
+
+@app.delete("/api/tips/{tip_id}")
+async def delete_tip(tip_id: int):
+    """Tip sil"""
+    try:
+        success = database.delete_tip(tip_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Tip not found")
+        return {"status": "success", "message": "Tip deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting tip: {str(e)}")
+
+# ========== CATEGORIES ENDPOINTS ==========
+
+@app.get("/api/categories")
+async def get_categories():
+    """Tüm kategorileri getir"""
+    try:
+        categories = database.get_all_categories()
+        return {"status": "success", "data": categories, "count": len(categories)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching categories: {str(e)}")
+
+@app.get("/api/categories/{category_id}")
+async def get_category_by_id(category_id: int):
+    """ID'ye göre kategori getir"""
+    category = database.get_category_by_id(category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    return {"status": "success", "data": category}
+
+@app.post("/api/categories")
+async def create_category(category: CategoryCreate):
+    """Yeni kategori ekle"""
+    try:
+        category_id = database.add_category(
+            name=category.name,
+            description=category.description
+        )
+        return {"status": "success", "message": "Category created", "id": category_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating category: {str(e)}")
 
 if __name__ == "__main__":
     import uvicorn
