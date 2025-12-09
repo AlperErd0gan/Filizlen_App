@@ -186,7 +186,7 @@ BACKEND_URL=http://localhost:8000
 - Check API key validity
 - Ensure you have API quota available
 
-### Model Cache Mechanism For Gemini Models (Short Explanation)
+## Model Cache Mechanism For Gemini Models (Short Explanation)
 
 The backend stores the Gemini model in an in-memory cache:
 
