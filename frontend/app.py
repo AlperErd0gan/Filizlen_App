@@ -37,7 +37,7 @@ st.markdown("""
     
     /* Headings */
     h1, h2, h3 {
-        color: #4A6741 !important;
+        color: #5a8560 !important;
         font-family: 'Helvetica Neue', sans-serif;
     }
 
@@ -45,7 +45,7 @@ st.markdown("""
     .main-header {
         font-size: 3.5rem;
         font-weight: bold;
-        color: #4A6741;
+        color: #5a8560;
         text-align: center;
         margin-bottom: 1rem;
         text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
@@ -60,7 +60,7 @@ st.markdown("""
 
     /* Buttons */
     .stButton>button {
-        background-color: #4A6741;
+        background-color: #5a8560;
         color: #F5F1E6;
         border: none;
         border-radius: 8px;
@@ -83,17 +83,18 @@ st.markdown("""
     }
     /* Streamlit's native chat message container adjustments */
     [data-testid="stChatMessage"] {
-        background-color: #4A6741;
+        background-color: #5a8560;
     }
     [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] {
         padding: 1rem;
         border-radius: 10px;
+        color: #FFFFFF;
     }
     /* User Message Style (Green) */
     [data-testid="stChatMessage"][data-testid="user"] [data-testid="stMarkdownContainer"] {
         background-color: #D6E8D6; /* Very light green */
         color: #1a1a1a;
-        border-left: 5px solid #4A6741;
+        border-left: 5px solid #5a8560;
     }
     /* Assistant Message Style (Brown/Beige) */
     [data-testid="stChatMessage"][data-testid="assistant"] [data-testid="stMarkdownContainer"] {
@@ -120,7 +121,7 @@ st.markdown("""
     .news-title {
         font-size: 1.2rem;
         font-weight: bold;
-        color: #4A6741;
+        color: #5a8560;
         margin-bottom: 0.5rem;
     }
 
@@ -134,6 +135,13 @@ st.markdown("""
         height: 100%;
         border: 1px solid #E0E0E0;
     }
+    
+    /* Center avatar icons vertically inside chat message rows */
+    [data-testid="stChatMessage"] {
+        display: flex;
+        align-items: center;
+    }
+    
     </style>
 """, unsafe_allow_html=True)
 
@@ -181,7 +189,7 @@ def go_to_news():
 
 def landing_page():
     st.markdown('<div class="main-header">🌿 Flizlen</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">Your intelligent companion for insights and news</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">Tarım haberleri ve akıllı öneriler için dijital rehberiniz</div>', unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
     
@@ -192,34 +200,34 @@ def landing_page():
         with c1:
             st.markdown("""
             <div style="text-align: center; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px;">
-                <h3 style="margin:0;">💬 Chat</h3>
-                <p style="color: #666;">Interact with the AI assistant</p>
+                <h3 style="margin:0;">💬 Sohbet</h3>
+                <p style="color: #666;">Yapay zeka danışmanı ile sohbet edin</p>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("Open Chat", use_container_width=True):
+            if st.button("Sohbete Git", use_container_width=True):
                 go_to_chat()
                 st.rerun()
 
         with c2:
             st.markdown("""
             <div style="text-align: center; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px;">
-                <h3 style="margin:0;">📰 News</h3>
-                <p style="color: #666;">Latest updates and headlines</p>
+                <h3 style="margin:0;">📰 Haberler</h3>
+                <p style="color: #666;">Son gelişmeler ve başlıklar</p>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("Read News", use_container_width=True):
+            if st.button("Haberlere Git", use_container_width=True):
                 go_to_news()
                 st.rerun()
 
 def chat_interface():
     # Top Navigation Bar
-    col_nav1, col_nav2 = st.columns([1, 5])
+    col_nav1, col_nav2 = st.columns([1, 5], vertical_alignment="center")
     with col_nav1:
-        if st.button("← Home"):
+        if st.button("← Anasayfa"):
             go_to_landing()
             st.rerun()
     with col_nav2:
-        st.markdown("## 💬 Intelligent Chat")
+        st.markdown("## 💬 Akıllı Asistan")
 
     # Sidebar for Chat
     with st.sidebar:
@@ -285,13 +293,13 @@ def chat_interface():
 
 def news_interface():
     # Top Navigation Bar
-    col_nav1, col_nav2 = st.columns([1, 5])
+    col_nav1, col_nav2 = st.columns([1, 5], vertical_alignment="center")
     with col_nav1:
-        if st.button("← Home"):
+        if st.button("← Anasayfa"):
             go_to_landing()
             st.rerun()
     with col_nav2:
-        st.markdown("## 📰 Latest News")
+        st.markdown("## 📰 Son Haberler")
 
     # Mock Data for News (You can replace this with a backend call later)
     news_items = [
@@ -322,7 +330,7 @@ def news_interface():
         </div>
         """, unsafe_allow_html=True)
     
-    st.info("End of news feed.")
+    st.info("Haberlerin sonu.")
 
 # --- Main Controller ---
 def main():
