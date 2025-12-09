@@ -15,6 +15,45 @@ import database
 # Load environment variables
 load_dotenv()
 
+SYSTEM_PROMPT = """
+Sen, “Chatbot Destekli Akıllı Tarım Uygulaması” için özel olarak 
+tasarlanmış bir yapay zekâ danışmanısın. Tüm yanıtların yalnızca bu 
+uygulamanın kapsamı ve amacı doğrultusunda üretilmelidir. 
+
+1. Uygulamanın amacı tarım ile ilgilenen kullanıcılar için: 
+- Tarım haberleri, 
+- Meteorolojik veriler, 
+- Bitki yetiştirme rehberleri, 
+- Hastalık ve zararlı tanımları, 
+- Sulama, gübreleme ve bakım önerileri, 
+- Haftalık tarım ipuçları, 
+- Tarımsal karar destek bilgileri 
+sunmaktır. 
+
+2. Cevapların yalnızca şu bilgi alanlarıyla sınırlı olmalıdır: 
+- Tarım haberleri 
+- İklim ve meteoroloji verileri 
+- Bitki yetiştirme bilgileri 
+- Gübreleme, sulama ve bakım teknikleri 
+- Zararlı ve hastalık belirtileri 
+- Kullanıcıdan gelen bağlam 
+- Uygulamada yer alan rehber içerikler 
+
+Bu alanların dışında bilgi üretmek yasaktır. 
+
+3. Her zaman “Akıllı Tarım Danışmanı” rolünde yanıt vermelisin. 
+Yanıtların teknik, doğru, anlaşılır ve tarım odaklı olmalıdır. Gereksiz 
+sohbet, hikâye, tahmin veya tarım dışı içerik üretmemelisin. 
+
+4. Kullanıcı tarım dışı bir konu sorarsa şu şekilde yanıt ver: 
+
+“Bu uygulama tarımsal danışmanlık amacıyla tasarlanmıştır. Sorunuz 
+uygulama kapsamı dışındadır. Tarımla ilgili bir konuda yardımcı 
+olabilirim.” 
+
+Son kural: Tüm yanıtların yalnızca Chatbot Destekli Akıllı Tarım Uygulaması kapsamında olmalıdır.
+"""
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Flizlen App API",
@@ -100,7 +139,7 @@ def get_gemini_model():
         
         for model_name in model_names:
             try:
-                model = genai.GenerativeModel(model_name)
+                model = genai.GenerativeModel(model_name, system_instruction=SYSTEM_PROMPT)
                 # Test if model is accessible with a simple test
                 return model
             except Exception as e:
@@ -197,6 +236,8 @@ async def chat(request: ChatRequest):
         if not response_text:
             response_text = str(response)
             print(f"Warning: Using string representation of response: {type(response)}")
+            
+        print("INFO: RAGAS metrics calculation (Faithfulness, Answer Relevancy) should be triggered here using the prompt and response_text.")
         
         return ChatResponse(
             response=response_text,
@@ -205,13 +246,15 @@ async def chat(request: ChatRequest):
     
     except Exception as e:
         import traceback
-        error_details = traceback.format_exc()
-        print(f"Error in chat endpoint: {error_details}")  # Log for debugging
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error processing chat request: {str(e)}"
+        print(f"[CHAT ENDPOINT ERROR]\n{traceback.format_exc()}")
+        fallback_text = (
+            "Sistemde beklenmeyen bir hata oluştu. "
+            "Lütfen tekrar deneyin veya bağlantınızı kontrol edin."
         )
-
+        return ChatResponse(
+            response=fallback_text,
+            status="error"
+        )
 @app.post("/api/generate-text")
 async def generate_text(prompt: str):
     """
