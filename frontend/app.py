@@ -147,24 +147,26 @@ def main():
         
         # Show loading indicator
         with st.chat_message("assistant"):
+            placeholder = st.empty()
             with st.spinner("Thinking..."):
-                # Send request to backend
                 response = send_chat_message(prompt, conversation_history)
-                
-                if response and response.get("status") == "success":
-                    assistant_response = response.get("response", "No response received")
-                    st.markdown(assistant_response)
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": assistant_response
-                    })
-                else:
-                    error_msg = "Sorry, I encountered an error. Please check your backend connection and API configuration."
-                    st.error(error_msg)
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": error_msg
-                    })
+
+            if response and response.get("status") == "success":
+                assistant_response = response.get("response", "No response received")
+                placeholder.markdown(assistant_response)  # Replace spinner with final reply
+
+                # Add only to persistent history (renders once on rerun)
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": assistant_response
+                })
+            else:
+                error_msg = "Sorry, I encountered an error. Please check your backend connection and API configuration."
+                placeholder.error(error_msg)
+                st.session_state.messages.append({
+                    "role": "assistant",
+                    "content": error_msg
+                })
 
 if __name__ == "__main__":
     main()
