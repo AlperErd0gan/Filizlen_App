@@ -10,6 +10,7 @@ from typing import Optional, List
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
+from google.api_core import exceptions as google_exceptions
 import database
 
 # Load environment variables
@@ -165,6 +166,43 @@ def get_gemini_model():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to initialize Gemini model: {str(e)}. Please check your API key and model availability.")
 
+async def generate_with_fallback(prompt: str):
+    """
+    Attempts to generate content using a prioritized list of models.
+    If a ResourceExhausted (Quota) error occurs, it switches to the next model.
+    """
+    # Priority list as requested
+    MODEL_PRIORITY = [
+        "gemini-2.5-flash",
+        "gemini-2.5-flash-lite"
+    ]
+    
+    last_exception = None
+
+    for model_name in MODEL_PRIORITY:
+        try:
+            print(f"INFO: Attempting generation with model: {model_name}")
+            model = genai.GenerativeModel(model_name, system_instruction=SYSTEM_PROMPT)
+            response = model.generate_content(prompt)
+            return response
+            
+        except google_exceptions.ResourceExhausted as e:
+            print(f"WARNING: Quota exceeded for {model_name}. Switching to fallback...")
+            last_exception = e
+            continue  # Try the next model in the list
+            
+        except Exception as e:
+            # If it's a different error (e.g. InvalidArgument), usually we shouldn't retry
+            # simply with a different model, but for robustness we can log it.
+            print(f"ERROR: Failed with {model_name}: {str(e)}")
+            last_exception = e
+            # Depending on the error type, you might want to break here. 
+            # For now, we continue to try the next model just in case.
+            continue
+
+    # If loop finishes without returning, raise the last exception
+    raise last_exception if last_exception else Exception("All models failed to generate content.")
+
 @app.get("/", response_model=HealthResponse)
 async def root():
     """Health check endpoint"""
@@ -185,7 +223,7 @@ async def health_check():
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     """
-    Chat endpoint that processes user messages using Gemini AI
+    Chat endpoint that processes user messages using Gemini AI with Fallback
     """
     if not GEMINI_API_KEY:
         raise HTTPException(
@@ -194,36 +232,31 @@ async def chat(request: ChatRequest):
         )
     
     try:
-        model = get_gemini_model()
-        
         # Build conversation context
-        prompt = request.message
+        prompt_text = request.message
         
         # If there's conversation history, include it for context
         if request.conversation_history:
             context = "\n".join([
                 f"User: {msg.get('user', '')}\nAssistant: {msg.get('assistant', '')}"
-                for msg in request.conversation_history[-5:]  # Last 5 messages for context
+                for msg in request.conversation_history[-5:]
             ])
-            prompt = f"{context}\n\nUser: {request.message}\nAssistant:"
+            prompt_text = f"{context}\n\nUser: {request.message}\nAssistant:"
         
-        # Generate response using Gemini
-        response = model.generate_content(prompt)
+        # Fallback function
+        response = await generate_with_fallback(prompt_text)
         
-        # Handle different response formats - try most common first
+        # Handle different response formats
         response_text = None
         try:
-            # Most common: direct text attribute
             if hasattr(response, 'text') and response.text:
                 response_text = response.text
-            # Alternative: candidates structure
             elif hasattr(response, 'candidates') and len(response.candidates) > 0:
                 candidate = response.candidates[0]
                 if hasattr(candidate, 'content') and hasattr(candidate.content, 'parts'):
                     response_text = candidate.content.parts[0].text
                 elif hasattr(candidate, 'text'):
                     response_text = candidate.text
-            # Fallback: try to extract from content
             elif hasattr(response, 'content'):
                 if hasattr(response.content, 'parts') and len(response.content.parts) > 0:
                     response_text = response.content.parts[0].text
@@ -232,29 +265,30 @@ async def chat(request: ChatRequest):
         except Exception as e:
             print(f"Error extracting response text: {e}")
         
-        # Final fallback
         if not response_text:
             response_text = str(response)
-            print(f"Warning: Using string representation of response: {type(response)}")
             
-        print("INFO: RAGAS metrics calculation (Faithfulness, Answer Relevancy) should be triggered here using the prompt and response_text.")
+        print("INFO: RAGAS metrics calculation (Faithfulness, Answer Relevancy) should be triggered here.")
         
         return ChatResponse(
             response=response_text,
             status="success"
         )
     
+    except google_exceptions.ResourceExhausted:
+        # If even the fallback fails
+        return ChatResponse(
+            response="Sistem şu anda çok yoğun (Kota limiti aşıldı). Lütfen bir süre sonra tekrar deneyin.",
+            status="error"
+        )
     except Exception as e:
         import traceback
         print(f"[CHAT ENDPOINT ERROR]\n{traceback.format_exc()}")
-        fallback_text = (
-            "Sistemde beklenmeyen bir hata oluştu. "
-            "Lütfen tekrar deneyin veya bağlantınızı kontrol edin."
-        )
         return ChatResponse(
-            response=fallback_text,
+            response="Sistemde beklenmeyen bir hata oluştu. Lütfen bağlantınızı kontrol edin.",
             status="error"
         )
+
 @app.post("/api/generate-text")
 async def generate_text(prompt: str):
     """
