@@ -186,6 +186,29 @@ BACKEND_URL=http://localhost:8000
 - Check API key validity
 - Ensure you have API quota available
 
+### Model Cache Mechanism For Gemini Models (Short Explanation)
+
+The backend stores the Gemini model in an in-memory cache:
+
+```python
+_model_cache = {}
+```
+
+This means the model is **loaded only once**, and all future requests reuse the same instance.
+It behaves similarly to a lightweight *session* because:
+
+* The **system prompt is applied once** and kept inside the model
+* The model **persists in memory** while the server is running
+* Requests do **not** reload or reinitialize the model
+* Performance improves and token usage decreases
+
+However, this is **not a user session**.
+It does **not** store user-specific data—only the model instance is reused.
+
+In short:
+
+> **Model caching = Fast, consistent, low-cost model reuse (session-like behavior, but not per-user).**
+
 ## 📄 License
 
 This project is provided as-is for development purposes.
