@@ -168,10 +168,14 @@ def get_gemini_model():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to initialize Gemini model: {str(e)}. Please check your API key and model availability.")
 
+# Cache for models to avoid recreating them and resending system prompt
+_model_cache = {}
+
 async def generate_with_fallback(prompt: str):
     """
     Attempts to generate content using a prioritized list of models.
     If a ResourceExhausted (Quota) error occurs, it switches to the next model.
+    Uses cached models with system_instruction for efficiency (avoids sending system prompt in every request).
     """
     # Priority list as requested
     MODEL_PRIORITY = [
@@ -181,14 +185,42 @@ async def generate_with_fallback(prompt: str):
     
     last_exception = None
 
-    # Combine system prompt with user prompt
-    full_prompt = f"{SYSTEM_PROMPT}\n\n{prompt}"
-
     for model_name in MODEL_PRIORITY:
         try:
             print(f"INFO: Attempting generation with model: {model_name}")
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(full_prompt)
+            
+            # Use cached model if available, otherwise create and cache it
+            if model_name not in _model_cache:
+                try:
+                    # Try with system_instruction first (most efficient - system prompt sent once)
+                    _model_cache[model_name] = genai.GenerativeModel(
+                        model_name, 
+                        system_instruction=SYSTEM_PROMPT
+                    )
+                    print(f"INFO: Created and cached model {model_name} with system_instruction")
+                except (TypeError, ValueError) as e:
+                    # Fallback: if system_instruction not supported, create model without it
+                    # and we'll add system prompt to each request
+                    _model_cache[model_name] = {
+                        'model': genai.GenerativeModel(model_name),
+                        'has_system_instruction': False
+                    }
+                    print(f"INFO: Created and cached model {model_name} without system_instruction (fallback mode)")
+            
+            # Get model from cache
+            cached_item = _model_cache[model_name]
+            
+            # Check if it's a dict (fallback mode) or direct model (with system_instruction)
+            if isinstance(cached_item, dict):
+                # Fallback mode: add system prompt to each request
+                model = cached_item['model']
+                full_prompt = f"{SYSTEM_PROMPT}\n\n{prompt}"
+                response = model.generate_content(full_prompt)
+            else:
+                # Optimized mode: model has system_instruction, use prompt directly
+                model = cached_item
+                response = model.generate_content(prompt)
+            
             return response
             
         except google_exceptions.ResourceExhausted as e:
