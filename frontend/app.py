@@ -142,6 +142,19 @@ st.markdown("""
         align-items: center;
     }
     
+    /* Footer Styling */
+    .footer-container {
+        text-align: center;
+        margin-top: 5rem;
+        padding-top: 2rem;
+        border-top: 1px solid #eee;
+        color: #aaa;
+        font-size: 0.8rem;
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+    }
+    
     /* News Link Styling */
     a.news-card-link {
         text-decoration: none !important;
@@ -325,6 +338,13 @@ def landing_page():
             if st.button("İpuçlarına Git", use_container_width=True):
                 go_to_tips()
                 st.rerun()
+
+    # Footer
+    st.markdown("""
+    <div class="footer-container">
+        <div>© 2025 Flizlen App. Tüm hakları saklıdır.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 def chat_interface():
     # Top Navigation Bar
