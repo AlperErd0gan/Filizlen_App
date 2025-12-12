@@ -176,6 +176,15 @@ def send_chat_message(message: str, conversation_history: List[Dict]):
     except requests.exceptions.RequestException as e:
         return {"status": "error", "detail": str(e)}
 
+def fetch_news(limit: int = 10):
+    """Fetch news from backend API"""
+    try:
+        response = requests.get(f"{BACKEND_URL}/api/news?limit={limit}", timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        return {"status": "error", "detail": str(e)}
+
 def go_to_landing():
     st.session_state.page = "landing"
 
@@ -222,7 +231,7 @@ def landing_page():
 def chat_interface():
     # Top Navigation Bar
     # We use 3 columns: [Button, Title, Spacer] to ensure the title is perfectly centered
-    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1], vertical_alignment="center")
+    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1])
     
     with col_nav1:
         if st.button("← Anasayfa"):
@@ -304,7 +313,7 @@ def chat_interface():
 def news_interface():
     # Top Navigation Bar
     # We use 3 columns: [Button, Title, Spacer]
-    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1], vertical_alignment="center")
+    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1])
     
     with col_nav1:
         if st.button("← Anasayfa"):
@@ -321,36 +330,50 @@ def news_interface():
     with col_nav3:
         st.empty() # Spacer to balance the layout
 
-    # Mock Data for News (You can replace this with a backend call later)
-    news_items = [
-        {
-            "title": "Global Markets Rally Amid Tech Surge",
-            "date": datetime.date.today().strftime("%B %d, %Y"),
-            "summary": "Technology stocks led a broad market rally today as investors reacted positively to new AI developments and earnings reports."
-        },
-        {
-            "title": "Sustainable Energy Breakthrough",
-            "date": (datetime.date.today() - datetime.timedelta(days=1)).strftime("%B %d, %Y"),
-            "summary": "Researchers have discovered a new method to increase the efficiency of solar panels using organic materials."
-        },
-        {
-            "title": "New Features Coming to Flizlen",
-            "date": (datetime.date.today() - datetime.timedelta(days=2)).strftime("%B %d, %Y"),
-            "summary": "The development team has announced a roadmap including voice integration and document analysis capabilities."
-        }
-    ]
-
-    # Display News Cards
-    for item in news_items:
-        st.markdown(f"""
-        <div class="news-card">
-            <div class="news-date">{item['date']}</div>
-            <div class="news-title">{item['title']}</div>
-            <div>{item['summary']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.info("Haberlerin sonu.")
+    # Fetch News from Backend
+    with st.spinner("Haberler yükleniyor..."):
+        news_response = fetch_news(limit=20)
+        
+    if news_response.get("status") == "success":
+        news_items = news_response.get("data", [])
+        
+        if not news_items:
+            st.info("Henüz hiç haber bulunmuyor.")
+        
+        for item in news_items:
+            # Format date (handling different potential formats or None)
+            display_date = "Tarih yok"
+            if item.get('published_at'):
+                try:
+                    # Try to parse ISO format first
+                    if 'T' in item['published_at']:
+                        date_obj = datetime.datetime.fromisoformat(item['published_at'].replace('Z', '+00:00'))
+                        display_date = date_obj.strftime("%B %d, %Y")
+                    else:
+                        display_date = item['published_at']
+                except:
+                    display_date = item['published_at']
+            
+            # Use 'summary' for the card content, fallback to truncated 'content'
+            content_preview = item.get('summary')
+            if not content_preview and item.get('content'):
+                content_preview = item['content'][:150] + "..." if len(item['content']) > 150 else item['content']
+            
+            st.markdown(f"""
+            <div class="news-card">
+                <div class="news-date">{display_date}</div>
+                <div class="news-title">{item['title']}</div>
+                <div>{content_preview}</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        st.info("Haberlerin sonu.")
+        
+    else:
+        error_msg = news_response.get('detail', 'Sunucuya bağlanılamadı.')
+        st.error(f"Haberler yüklenirken bir hata oluştu: {error_msg}")
+        if st.button("Tekrar Dene"):
+            st.rerun()
 
 # --- Main Controller ---
 def main():
