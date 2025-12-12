@@ -155,6 +155,19 @@ st.markdown("""
         border-left: 5px solid #5a8560;
     }
     
+    /* Hide Streamlit anchor links and disable functionality */
+    .stMarkdown h1 a, .stMarkdown h2 a, .stMarkdown h3 a, .stMarkdown h4 a, .stMarkdown h5 a, .stMarkdown h6 a {
+        display: none !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+    /* Also target specific data-testid if needed for newer Streamlit versions */
+    [data-testid="stMarkdownContainer"] a.anchor-link {
+        display: none !important;
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+    
     </style>
 """, unsafe_allow_html=True)
 
