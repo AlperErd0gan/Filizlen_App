@@ -10,6 +10,7 @@ services:
         value: 3.10.12
       - key: GEMINI_API_KEY
         sync: false # User will input this in dashboard
+    plan: free
 
   # Frontend Streamlit App
   - type: web
@@ -25,3 +26,4 @@ services:
           type: web
           name: flizlen-backend
           property: hostport
+    plan: free

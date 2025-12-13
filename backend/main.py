@@ -11,7 +11,7 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
-import database
+from backend import database
 
 # Load environment variables
 load_dotenv()
