@@ -35,6 +35,118 @@ st.markdown("""
         color: #5A8560;
     }
     
+    /* --- Professional Landing Page Theme --- */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+    
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif;
+    }
+
+    /* Hero Section Styling */
+    .main-header {
+        font-family: 'Inter', sans-serif;
+        font-size: 4.5rem;
+        font-weight: 800;
+        background: linear-gradient(120deg, #4A6741, #8FBC8F);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        letter-spacing: -1.5px;
+        padding-top: 2rem;
+    }
+    
+    .sub-header {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.25rem;
+        color: #6B8E23;
+        text-align: center;
+        font-weight: 400;
+        margin-bottom: 4rem;
+        opacity: 0.9;
+    }
+
+    /* Card Container Styling */
+    .landing-card {
+        background: white;
+        border-radius: 24px;
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        border: 1px solid rgba(0,0,0,0.03);
+        height: 220px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .landing-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(74, 103, 65, 0.1);
+        border-color: rgba(74, 103, 65, 0.2);
+    }
+    
+    .landing-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        background: #F5F1E6;
+        width: 80px;
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    
+    .landing-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.75rem;
+    }
+    
+    .landing-desc {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        line-height: 1.5;
+    }
+    
+    /* Enhance Streamlit Buttons to match cards */
+    .stButton button {
+        background-color: #4A6741 !important;
+        color: white !important;
+        border-radius: 12px !important;
+        padding: 0.75rem 2rem !important;
+        font-weight: 600 !important;
+        border: none !important;
+        box-shadow: 0 4px 6px rgba(74, 103, 65, 0.2) !important;
+        transition: all 0.2s ease !important;
+        white-space: nowrap !important;
+        min-width: 140px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .stButton button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(74, 103, 65, 0.3) !important;
+        background-color: #3e5636 !important;
+    }
+    
+    /* Footer Styling */
+    .footer-container {
+        text-align: center;
+        margin-top: 6rem;
+        padding-top: 3rem;
+        border-top: 1px solid #e0e0e0;
+        color: #95a5a6;
+        font-size: 0.85rem;
+    }
+    
     /* Headings */
     h1, h2, h3 {
         color: #5a8560 !important;
@@ -42,7 +154,8 @@ st.markdown("""
     }
 
     /* Custom Header */
-    .main-header {
+    /* The main-header and sub-header above override these for the landing page */
+    /* .main-header {
         font-size: 3.5rem;
         font-weight: bold;
         color: #5a8560;
@@ -56,10 +169,11 @@ st.markdown("""
         color: #6B8E23;
         text-align: center;
         margin-bottom: 3rem;
-    }
+    } */
 
     /* Buttons */
-    .stButton>button {
+    /* The .stButton button above overrides this */
+    /* .stButton>button {
         background-color: #5a8560;
         color: #F5F1E6;
         border: none;
@@ -72,7 +186,7 @@ st.markdown("""
         background-color: #5A8560;
         color: #FFFFFF;
         border-color: #5A8560;
-    }
+    } */
 
     /* Chat Messages */
     .chat-message {
@@ -126,7 +240,8 @@ st.markdown("""
     }
 
     /* Navigation Card Style for Landing Page */
-    .nav-card {
+    /* The .landing-card above overrides this */
+    /* .nav-card {
         background-color: white;
         padding: 2rem;
         border-radius: 15px;
@@ -134,7 +249,7 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         height: 100%;
         border: 1px solid #E0E0E0;
-    }
+    } */
     
     /* Center avatar icons vertically inside chat message rows */
     [data-testid="stChatMessage"] {
@@ -143,7 +258,8 @@ st.markdown("""
     }
     
     /* Footer Styling */
-    .footer-container {
+    /* The .footer-container above overrides this */
+    /* .footer-container {
         text-align: center;
         margin-top: 5rem;
         padding-top: 2rem;
@@ -153,7 +269,7 @@ st.markdown("""
         display: flex;
         justify-content: center;
         gap: 2rem;
-    }
+    } */
     
     /* News Link Styling */
     a.news-card-link {
@@ -294,6 +410,14 @@ def go_to_news_detail(news_item):
     st.session_state.selected_news = news_item
     st.session_state.page = "news_detail"
 
+def display_footer():
+    """Display the application footer"""
+    st.markdown("""
+    <div class="footer-container">
+        <div>© 2025 Flizlen App. Tüm hakları saklıdır.</div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # --- Views ---
 
 def landing_page():
@@ -308,48 +432,47 @@ def landing_page():
         
         with c1:
             st.markdown("""
-            <div style="text-align: center; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; height: 160px;">
-                <h3 style="margin:0;">💬 Sohbet</h3>
-                <p style="color: #666; font-size: 0.9rem;">Yapay zeka danışmanı ile sohbet edin</p>
+            <div class="landing-card">
+                <div class="landing-icon">💬</div>
+                <div class="landing-title">Sohbet</div>
+                <div class="landing-desc">Yapay zeka asistanı ile<br>tarım üzerine konuşun</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("Sohbete Git", use_container_width=True):
+            if st.button("Sohbete Başla", use_container_width=True):
                 go_to_chat()
                 st.rerun()
 
         with c2:
             st.markdown("""
-            <div style="text-align: center; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; height: 160px;">
-                <h3 style="margin:0;">📰 Haberler</h3>
-                <p style="color: #666; font-size: 0.9rem;">Son gelişmeler ve başlıklar</p>
+            <div class="landing-card">
+                <div class="landing-icon">📰</div>
+                <div class="landing-title">Haberler</div>
+                <div class="landing-desc">Tarımsal gelişmeler ve<br>güncel başlıklar</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("Haberlere Git", use_container_width=True):
+            if st.button("Haberleri Oku", use_container_width=True):
                 go_to_news()
                 st.rerun()
                 
         with c3:
             st.markdown("""
-            <div style="text-align: center; padding: 20px; background: white; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 10px; height: 160px;">
-                <h3 style="margin:0;">💡 İpuçları</h3>
-                <p style="color: #666; font-size: 0.9rem;">Pratik tarım bilgileri</p>
+            <div class="landing-card">
+                <div class="landing-icon">💡</div>
+                <div class="landing-title">İpuçları</div>
+                <div class="landing-desc">Verimlilik için<br>pratik bilgiler</div>
             </div>
             """, unsafe_allow_html=True)
-            if st.button("İpuçlarına Git", use_container_width=True):
+            if st.button("İpuçlarını Gör", use_container_width=True):
                 go_to_tips()
                 st.rerun()
 
     # Footer
-    st.markdown("""
-    <div class="footer-container">
-        <div>© 2025 Flizlen App. Tüm hakları saklıdır.</div>
-    </div>
-    """, unsafe_allow_html=True)
+    display_footer()
 
 def chat_interface():
     # Top Navigation Bar
     # We use 3 columns: [Button, Title, Spacer] to ensure the title is perfectly centered
-    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1])
+    col_nav1, col_nav2, col_nav3 = st.columns([2, 5, 2])
     
     with col_nav1:
         if st.button("← Anasayfa"):
@@ -428,10 +551,12 @@ def chat_interface():
                     "content": error_msg
                 })
 
+
+
 def news_interface():
     # Top Navigation Bar
     # We use 3 columns: [Button, Title, Spacer]
-    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1])
+    col_nav1, col_nav2, col_nav3 = st.columns([2, 5, 2])
     
     with col_nav1:
         if st.button("← Anasayfa"):
@@ -501,6 +626,9 @@ def news_interface():
         if st.button("Tekrar Dene", key="news_retry"):
             st.rerun()
 
+    # Footer
+    display_footer()
+
 def news_detail_interface():
     # Helper to go back
     def back_to_news():
@@ -510,7 +638,7 @@ def news_detail_interface():
         st.session_state.selected_news = None
         
     # Top Navigation
-    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1])
+    col_nav1, col_nav2, col_nav3 = st.columns([2, 5, 2])
     
     with col_nav1:
         if st.button("← Haberlere Dön"):
@@ -570,9 +698,12 @@ def news_detail_interface():
     </div>
     """, unsafe_allow_html=True)
 
+    # Footer
+    display_footer()
+
 def tips_interface():
     # Top Navigation Bar
-    col_nav1, col_nav2, col_nav3 = st.columns([1, 8, 1])
+    col_nav1, col_nav2, col_nav3 = st.columns([2, 5, 2])
     
     with col_nav1:
         if st.button("← Anasayfa"):
@@ -632,6 +763,9 @@ def tips_interface():
         st.error(f"İpuçları yüklenirken bir hata oluştu: {error_msg}")
         if st.button("Tekrar Dene", key="tips_retry"):
             st.rerun()
+
+    # Footer
+    display_footer()
 
 # --- Main Controller ---
 def main():
