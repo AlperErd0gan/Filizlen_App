@@ -36,11 +36,10 @@ if check_port 8501; then
 fi
 
 # Start backend
+# Start backend
 echo "📦 Starting FastAPI backend..."
-cd backend
-python main.py > ../backend.log 2>&1 &
+python -m backend.main > backend.log 2>&1 &
 BACKEND_PID=$!
-cd ..
 echo "   Backend started (PID: $BACKEND_PID)"
 echo "   Logs: backend.log"
 sleep 3

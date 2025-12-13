@@ -16,6 +16,5 @@ if lsof -Pi :8000 -sTCP:LISTEN -t >/dev/null 2>&1 ; then
     sleep 2
 fi
 
-cd backend
-python main.py
+python -m backend.main
 
