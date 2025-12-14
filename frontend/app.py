@@ -399,18 +399,22 @@ def fetch_news_item(news_id: int):
 
 def go_to_landing():
     st.query_params.clear()
+    st.session_state.internal_nav = True
     st.session_state.page = "landing"
 
 def go_to_chat():
     st.query_params.clear()
+    st.session_state.internal_nav = True
     st.session_state.page = "chat"
 
 def go_to_news():
     st.query_params.clear()
+    st.session_state.internal_nav = True
     st.session_state.page = "news"
 
 def go_to_tips():
     st.query_params.clear()
+    st.session_state.internal_nav = True
     st.session_state.page = "tips"
 
 def go_to_news_detail(news_item):
@@ -641,6 +645,7 @@ def news_detail_interface():
     def back_to_news():
         # Clear query params
         st.query_params.clear()
+        st.session_state.internal_nav = True
         st.session_state.page = "news"
         st.session_state.selected_news = None
         
@@ -783,8 +788,15 @@ def tips_interface():
 # --- Main Controller ---
 def main():
     # Check for query params for routing
-    if "news_id" in st.query_params:
+    # We only auto-route to news_detail if we are NOT in the middle of an internal navigation
+    # This prevents the app from bouncing back to the news item when the user tries to leave
+    internal_nav = st.session_state.get("internal_nav", False)
+    if "news_id" in st.query_params and not internal_nav:
         st.session_state.page = "news_detail"
+        
+    # Reset the flag after it has done its job
+    if internal_nav:
+        st.session_state.internal_nav = False
 
     if st.session_state.page == "landing":
         landing_page()
