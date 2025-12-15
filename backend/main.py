@@ -9,11 +9,16 @@ from pydantic import BaseModel
 from typing import Optional, List
 import os
 from dotenv import load_dotenv
+# Load environment variables immediately
+load_dotenv()
+
 import google.generativeai as genai
 from google.api_core import exceptions as google_exceptions
 from backend import database
+from backend.rag_system import rag_system
+from contextlib import asynccontextmanager
 
-# Load environment variables
+# Load environment variables (kept for safety, duplicate is harmless)
 load_dotenv()
 
 SYSTEM_PROMPT = """
@@ -55,11 +60,26 @@ olabilirim.”
 Son kural: Tüm yanıtların yalnızca Chatbot Destekli Akıllı Tarım Uygulaması kapsamında olmalıdır.
 """
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load RAG data on startup
+    print("INFO: Initializing RAG system...")
+    try:
+        rag_system.load_data()
+        print("INFO: RAG system initialized successfully")
+    except Exception as e:
+        print(f"WARNING: RAG system initialization failed: {e}")
+    yield
+    # Clean up (if needed)
+
+
+# Initialize FastAPI app
 # Initialize FastAPI app
 app = FastAPI(
     title="Flizlen App API",
-    description="Backend API with Gemini AI integration",
-    version="1.0.0"
+    description="Backend API with Gemini AI integration and RAG",
+    version="1.1.0",
+    lifespan=lifespan
 )
 
 # CORS middleware to allow Streamlit frontend to communicate
@@ -280,6 +300,33 @@ async def chat(request: ChatRequest):
             ])
             prompt_text = f"{context}\n\nUser: {request.message}\nAssistant:"
         
+        # RAG Retrieval
+        retrieved_docs = rag_system.search(request.message, top_k=3)
+        
+        context_block = ""
+        if retrieved_docs:
+            print(f"INFO: Retrieved {len(retrieved_docs)} relevant documents")
+            context_block = "\n".join([
+                f"--- BEGIN CONTEXT FROM DATABASE ({doc['type']}) ---\n{doc['content']}\n--- END CONTEXT ---"
+                for doc in retrieved_docs
+            ])
+            
+            # Augment User Message
+            prompt_text = (
+                f"Kullanıcı Sorusu: {request.message}\n\n"
+                f"Aşağıdaki veritabanı bilgilerini (Context) kullanarak cevap ver:\n"
+                f"{context_block}\n\n"
+                f"Not: Eğer bu bilgiler soruyu cevaplamak için yeterli değilse, genel tarım bilginle cevapla."
+            )
+            
+            # If conversation history exists, we need to bridge it carefully
+            if request.conversation_history:
+                 context = "\n".join([
+                    f"User: {msg.get('user', '')}\nAssistant: {msg.get('assistant', '')}"
+                    for msg in request.conversation_history[-5:]
+                ])
+                 prompt_text = f"{context}\n\n{prompt_text}\nAssistant:"
+
         # Fallback function
         response = await generate_with_fallback(prompt_text)
         
