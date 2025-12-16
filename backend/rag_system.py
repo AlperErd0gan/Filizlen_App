@@ -27,7 +27,7 @@ class LightweightRAG:
             logger.warning("Gemini API Key not found. RAG will not function.")
             return
 
-        self.embedding_model = "models/text-embedding-004" # Newer, better model
+        self.embedding_model = "models/text-embedding-004" 
         self.cache_file = os.path.join(os.path.dirname(__file__), "rag_cache.pkl")
         
         if not self.api_key:

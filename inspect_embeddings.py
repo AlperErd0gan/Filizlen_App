@@ -27,25 +27,52 @@ def inspect_cache():
         print(f"\n[OK] Cache Loaded Successfully")
         print(f"[INFO] Total Documents: {len(docs)}")
         print(f"[INFO] Embedding Matrix Shape: {embeddings.shape}")
-        print(f"       (This means {embeddings.shape[0]} documents, each having {embeddings.shape[1]} dimensions)")
         
-        if len(docs) > 0:
-            print("\n[DEBUG] --- Inspecting First Document ---")
-            print(f"ID: {docs[0]['id']}")
-            print(f"Type: {docs[0]['type']}")
-            print(f"Content Preview: {docs[0]['content'][:100]}...")
+        while True:
+            print("\n" + "="*40)
+            print(" DOCUMENT SELECTION MENU")
+            print("="*40)
             
-            vec = embeddings[0]
-            print(f"\n[INFO] Embedding Vector (First 10 values):")
-            print(f"       {vec[:10]}")
-            print(f"       ... and {len(vec)-10} more numbers ...")
+            # List documents compact
+            for i, doc in enumerate(docs):
+                # Try to get a title or summary for better listing
+                meta = doc.get('metadata', {})
+                title = meta.get('title', 'No Title')
+                print(f"{i+1}. [{doc['type'].upper()}] {title} (ID: {doc['id']})")
+                
+            print("\nEnter document number to inspect (or 'q' to quit)")
+            choice = input("Selection > ").strip()
             
-            print(f"\n[HELP] WHAT IS THIS?")
-            print("       These numbers are the 'semantic meaning' of text.")
-            print("       Similar texts will have similar lists of numbers.")
+            if choice.lower() == 'q':
+                print("Bye!")
+                break
+                
+            try:
+                idx = int(choice) - 1
+                if 0 <= idx < len(docs):
+                    doc = docs[idx]
+                    vec = embeddings[idx]
+                    
+                    print(f"\n[DEBUG] --- Inspecting Document #{idx+1} ---")
+                    print(f"ID: {doc['id']}")
+                    print(f"Type: {doc['type']}")
+                    print(f"Full Content:\n---\n{doc['content']}\n---")
+                    
+                    print(f"\n[INFO] Embedding Vector Preview (Size: {len(vec)}):")
+                    print(f"       {vec[:10]}")
+                    print(f"       ... {len(vec)-10} more dimensions ...")
+                    
+                    input("\nPress Enter to continue...")
+                else:
+                    print("[ERROR] Invalid selection number.")
+            except ValueError:
+                print("[ERROR] Please enter a valid number.")
 
     except Exception as e:
         print(f"[ERROR] Error reading cache: {e}")
 
 if __name__ == "__main__":
-    inspect_cache()
+    try:
+        inspect_cache()
+    except KeyboardInterrupt:
+        print("\nExiting...")
