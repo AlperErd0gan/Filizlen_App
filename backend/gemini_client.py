@@ -82,7 +82,11 @@ class GeminiClient:
         
         if cache_key not in self.model_cache:
             if system_instruction:
-                model = genai.GenerativeModel(model_name, system_instruction=system_instruction)
+                try:
+                    model = genai.GenerativeModel(model_name, system_instruction=system_instruction)
+                except TypeError:
+                    logger.warning(f"Model {model_name} does not support system_instruction (likely old library version). initializing without it.")
+                    model = genai.GenerativeModel(model_name)
             else:
                 model = genai.GenerativeModel(model_name)
             self.model_cache[cache_key] = model

@@ -553,7 +553,9 @@ def chat_interface():
                     "content": assistant_response
                 })
             else:
-                error_detail = response.get('detail', 'Unknown error') if response else 'Connection failed'
+                # Backend returns status="error" with message in "response" field (ChatResponse model)
+                # OR FastAPI returns "detail" on exception
+                error_detail = response.get('detail') or response.get('response') or 'Unknown error'
                 error_msg = f"⚠️ I encountered an error: {error_detail}"
                 placeholder.error(error_msg)
                 st.session_state.messages.append({
