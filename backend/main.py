@@ -156,9 +156,13 @@ async def generate_with_fallback(prompt: str):
     """
     # Priority list as requested
     MODEL_PRIORITY = [
-        "gemini-2.5-flash",
-        "gemini-2.5-flash-lite",
-        "gemini-1.5-flash"
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+        'gemini-pro-latest',
+        'gemini-flash-latest',
+        'gemini-2.0-flash',
+        'gemini-1.5-pro-latest',
+        'gemini-1.5-pro'
     ]
     
     last_exception = None
