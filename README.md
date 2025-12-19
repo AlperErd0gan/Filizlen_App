@@ -127,6 +127,10 @@ Create a `.env` file in the root directory:
 # Gemini API Configuration
 GEMINI_API_KEY=your_gemini_api_key_here
 
+# Optional: Add secondary keys for auto-fallback (useful if you are using the free API key)
+GEMINI_API_KEY_2=your_secondary_key_here
+GEMINI_API_KEY_3=and_so_on...
+
 # Backend Configuration
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8000
@@ -135,6 +139,24 @@ BACKEND_PORT=8000
 FRONTEND_PORT=8501
 BACKEND_URL=http://localhost:8000
 ```
+
+### Multi-Key Support & Verification
+
+The application supports multiple API keys to handle quota limits automatically. If one key fails (ResourceExhausted), the system seamlessly switches to the next available key.
+
+**To verify this works:**
+
+1.  **Live Test Script**: Run the included test script to manually trigger a key rotation and verify both keys work:
+    ```bash
+    cd backend
+    python3 test_keys_live.py
+    ```
+    *Output should show successful responses from both keys.*
+
+2.  **Mock Verification**: You can also run the mock unit tests:
+    ```bash
+    python3 backend/verify_gemini_client.py
+    ```
 
 ## Features
 
