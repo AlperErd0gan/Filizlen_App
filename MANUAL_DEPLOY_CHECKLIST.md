@@ -1,8 +1,8 @@
-# 🟢 AWS EC2 Manual Deployment Checklist
+# AWS EC2 Manual Deployment Checklist
 
 This is your master checklist for the **"Clean Deployment"** strategy.
 
-### ⚡️ Quick Answer: "Does it keep running if I close terminal?"
+### Quick Answer: "Does it keep running if I close terminal?"
 **YES.** That is exactly what `tmux` does.
 *   It creates a "virtual terminal" session on the server.
 *   When you "detach" (`CTRL+B` then `D`), the session stays alive in the background.
@@ -11,7 +11,7 @@ This is your master checklist for the **"Clean Deployment"** strategy.
 
 ---
 
-### 1️⃣ Launch & Connect
+### 1. Launch & Connect
 *   [ ] Launch **New** EC2 Instance (Ubuntu 22.04 LTS).
 *   [ ] Allow Ports in Security Group: `22` (SSH), `8000` (API), `8501` (UI).
 *   [ ] SSH into instance:
@@ -19,7 +19,7 @@ This is your master checklist for the **"Clean Deployment"** strategy.
     ssh -i /path/to/key.pem ubuntu@<PUBLIC_IP>
     ```
 
-### 2️⃣ One-Time Setup
+### 2. One-Time Setup
 *Run these commands once on the new server:*
 ```bash
 # Update & Install Tools
@@ -38,7 +38,7 @@ python3 -m venv venv
 chmod +x start_monolith.sh
 ```
 
-### 3️⃣ Start the App (The "Tmux" Way)
+### 3. Start the App (The "Tmux" Way)
 *   [ ] Start a new persistent session:
     ```bash
     tmux new -s flizlen
@@ -53,13 +53,13 @@ chmod +x start_monolith.sh
     ```
     *(You should see "Starting Backend" and "Starting Frontend" logs)*
 
-### 4️⃣ Detach & Leave
+### 4. Detach & Leave
 *   [ ] **Detach** from session (Leave it running):
     *   Press `CTRL + B`, release both, then press `D`.
     *   (You are now back in the main terminal, but app is running).
 *   [ ] Close SSH connection: `exit`
 
-### 📋 Maintenance Commands
+### Maintenance Commands
 *   **Check Status:** `tmux attach -t flizlen`
 *   **Stop App:** Attach, then `CTRL+C` (stops script), or kill session: `tmux kill-session -t flizlen`
 *   **Update Code:**
